@@ -55,28 +55,11 @@ public class Main {
                         resultFrame.setSize(600, 400);
                         resultFrame.setLayout(new GridLayout(1, 2));
 
-                        JTextArea lArea = new JTextArea();
-                        lArea.setEditable(false);
-                        lArea.append("Matriz L:\n");
-                        for (int i = 0; i < n; i++) {
-                            for (int j = 0; j < n; j++) {
-                                lArea.append(String.format("%10.4f", lu.getL().get(i, j)));
-                            }
-                            lArea.append("\n");
-                        }
+                        JTable lTable = createMatrixTable(lu.getL());
+                        JTable uTable = createMatrixTable(lu.getU());
 
-                        JTextArea uArea = new JTextArea();
-                        uArea.setEditable(false);
-                        uArea.append("Matriz U:\n");
-                        for (int i = 0; i < n; i++) {
-                            for (int j = 0; j < n; j++) {
-                                uArea.append(String.format("%10.4f", lu.getU().get(i, j)));
-                            }
-                            uArea.append("\n ");
-                        }
-
-                        resultFrame.add(new JScrollPane(lArea));
-                        resultFrame.add(new JScrollPane(uArea));
+                        resultFrame.add(new JScrollPane(lTable));
+                        resultFrame.add(new JScrollPane(uTable));
                         resultFrame.setVisible(true);
                     }
                 });
@@ -86,5 +69,21 @@ public class Main {
             frame.add(new JScrollPane(matrixPanel), BorderLayout.CENTER);
             frame.setVisible(true);
         });
+    }
+
+    private static JTable createMatrixTable(Matrix matrix) {
+        int rows = matrix.getRows();
+        int cols = matrix.getCols();
+        String[][] data = new String[rows][cols];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                data[i][j] = String.format("%.4f", matrix.get(i, j));
+            }
+        }
+        String[] columnNames = new String[cols];
+        for (int i = 0; i < cols; i++) {
+            columnNames[i] = "Col " + (i + 1);
+        }
+        return new JTable(data, columnNames);
     }
 }
