@@ -72,7 +72,7 @@ public class Main {
                             for (int j = 0; j < n; j++) {
                                 uArea.append(String.format("%10.4f", lu.getU().get(i, j)));
                             }
-                            uArea.append("\n");
+                            uArea.append("\n ");
                         }
 
                         resultFrame.add(new JScrollPane(lArea));
