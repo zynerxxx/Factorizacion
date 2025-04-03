@@ -8,65 +8,88 @@ public class Main {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Factorización LU");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setSize(600, 400);
+            frame.setSize(600, 500);
             frame.setLayout(new BorderLayout());
 
-            JPanel inputPanel = new JPanel(new GridLayout(0, 1));
-            JTextField sizeField = new JTextField();
-            inputPanel.add(new JLabel("Ingrese el tamaño de la matriz (n x n):"));
-            inputPanel.add(sizeField);
-
+            // Panel superior para el tamaño de la matriz
+            JPanel inputPanel = new JPanel(new FlowLayout());
+            JLabel sizeLabel = new JLabel("Ingrese el tamaño de la matriz (n x n):");
+            JTextField sizeField = new JTextField(5);
             JButton generateButton = new JButton("Generar Matriz");
+            inputPanel.add(sizeLabel);
+            inputPanel.add(sizeField);
             inputPanel.add(generateButton);
 
+            // Panel central para la matriz
             JPanel matrixPanel = new JPanel();
-            matrixPanel.setLayout(new GridLayout(0, 1));
+            matrixPanel.setLayout(new GridBagLayout());
+            JScrollPane matrixScrollPane = new JScrollPane(matrixPanel);
 
+            // Panel inferior para el botón de cálculo
+            JPanel actionPanel = new JPanel(new FlowLayout());
+            JButton calculateButton = new JButton("Calcular LU");
+            calculateButton.setEnabled(false); // Deshabilitado hasta que se genere la matriz
+            actionPanel.add(calculateButton);
+
+            // Acción para generar la matriz
             generateButton.addActionListener(e -> {
-                int n = Integer.parseInt(sizeField.getText());
-                matrixPanel.removeAll();
-                JTextField[][] fields = new JTextField[n][n];
-                matrixPanel.setLayout(new GridLayout(n, n));
-                for (int i = 0; i < n; i++) {
-                    for (int j = 0; j < n; j++) {
-                        fields[i][j] = new JTextField();
-                        matrixPanel.add(fields[i][j]);
+                try {
+                    int n = Integer.parseInt(sizeField.getText());
+                    if (n <= 0) throw new NumberFormatException();
+
+                    matrixPanel.removeAll();
+                    matrixPanel.setLayout(new GridLayout(n, n, 5, 5));
+                    JTextField[][] fields = new JTextField[n][n];
+
+                    for (int i = 0; i < n; i++) {
+                        for (int j = 0; j < n; j++) {
+                            fields[i][j] = new JTextField();
+                            fields[i][j].setHorizontalAlignment(JTextField.CENTER);
+                            matrixPanel.add(fields[i][j]);
+                        }
                     }
-                }
-                matrixPanel.revalidate();
-                matrixPanel.repaint();
 
-                JButton calculateButton = new JButton("Calcular LU");
-                matrixPanel.add(calculateButton);
+                    calculateButton.setEnabled(true); // Habilitar el botón de cálculo
+                    matrixPanel.revalidate();
+                    matrixPanel.repaint();
 
-                calculateButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        Matrix matrix = new Matrix(n, n);
-                        for (int i = 0; i < n; i++) {
-                            for (int j = 0; j < n; j++) {
-                                matrix.set(i, j, Double.parseDouble(fields[i][j].getText()));
+                    // Acción para calcular LU
+                    calculateButton.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            try {
+                                Matrix matrix = new Matrix(n, n);
+                                for (int i = 0; i < n; i++) {
+                                    for (int j = 0; j < n; j++) {
+                                        matrix.set(i, j, Double.parseDouble(fields[i][j].getText()));
+                                    }
+                                }
+
+                                LUDecomposition lu = new LUDecomposition(matrix);
+
+                                JFrame resultFrame = new JFrame("Resultados");
+                                resultFrame.setSize(600, 400);
+                                resultFrame.setLayout(new GridLayout(1, 2));
+
+                                JTable lTable = createMatrixTable(lu.getL());
+                                JTable uTable = createMatrixTable(lu.getU());
+
+                                resultFrame.add(new JScrollPane(lTable));
+                                resultFrame.add(new JScrollPane(uTable));
+                                resultFrame.setVisible(true);
+                            } catch (NumberFormatException ex) {
+                                JOptionPane.showMessageDialog(frame, "Por favor, ingrese valores válidos en la matriz.", "Error", JOptionPane.ERROR_MESSAGE);
                             }
                         }
-
-                        LUDecomposition lu = new LUDecomposition(matrix);
-
-                        JFrame resultFrame = new JFrame("Resultados");
-                        resultFrame.setSize(600, 400);
-                        resultFrame.setLayout(new GridLayout(1, 2));
-
-                        JTable lTable = createMatrixTable(lu.getL());
-                        JTable uTable = createMatrixTable(lu.getU());
-
-                        resultFrame.add(new JScrollPane(lTable));
-                        resultFrame.add(new JScrollPane(uTable));
-                        resultFrame.setVisible(true);
-                    }
-                });
+                    });
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(frame, "Por favor, ingrese un tamaño válido para la matriz.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
             });
 
             frame.add(inputPanel, BorderLayout.NORTH);
-            frame.add(new JScrollPane(matrixPanel), BorderLayout.CENTER);
+            frame.add(matrixScrollPane, BorderLayout.CENTER);
+            frame.add(actionPanel, BorderLayout.SOUTH);
             frame.setVisible(true);
         });
     }
